@@ -1,0 +1,4 @@
+*.log
+raft
+serf
+node-id
