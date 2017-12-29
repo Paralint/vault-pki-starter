@@ -9,7 +9,7 @@ This starter project was built on Windows, running the Linux version of Vault in
 
 ## Download and install Vault
 
-###Windows installation 
+### Windows installation 
 Although [I have my share of Windows scripting](https://stackoverflow.com/search?q=user%3A591064+%5Bbatch-file%5D), I feel there are too numerous options and too few tools to provide a copy-paste procedure like in Linux. If you are on Windows 10 and have Windows Subsystem for Linux installed, then you should run on of the Linux guides below. I would not run that configuration in production though.
 
 If you must use Windows, here are the steps to follow
