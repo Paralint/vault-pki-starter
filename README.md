@@ -5,7 +5,7 @@ A small project to get you started running your own PKI with Vault (on Consul st
 
 Hashicorp's binaries do not need any kind of installation procedure, just download and run.
 
-This starter project was built on Windows, running the Linux version of Vault in Windows subsystem for Linux. 
+This starter project was written and tested in Windows, running the Linux version of Vault in Windows subsystem for Linux as well as Windows native version. Except for the initial download and configuration, every command work as is in either Windows or Linux (and probably Mac, too!).
 
 ## Download and install Vault
 
@@ -56,12 +56,34 @@ Vault should be ready to run. Try this commmand :
 vault version
 ```
 
+# Running Vault on a Consul storage backend
 
-# Running Consul, the storage backend
+## Running Consul, the storage backend
 -----------------------------------
+
+A configuration file was created in this repository. It disables update checks and sets a cluster of 1. On a production system, Consul (or whatever storage backend you choose) plays an important part in your high-availability configuration. 
+
+To run `consul` with that configuration file, issue this command:
+
 ```bash
-consul agent --server --data-dir ./data --config-file ./consul-config.json -ui --bind 127.0.0.1 
+consul agent --server --data-dir ./data --config-file ./consul-config.json --ui --bind 127.0.0.1 
 ```
 
-# Running Vault
+## Running Vault
 -----------------------------------
+
+It is easy to run vault in development mode, but changes are not persisted to disk. This configuration is somewhat scaled down, but still quite close to a real production deployment. Just so you know, this configuration
+
+  - Listens on localhost. Production deployment must listen on an address that can be reached by other members of the cluster
+  - Disables mlock. On Linux, you will get [better security by preventing paging](https://www.vaultproject.io/docs/configuration/index.html#disable_mlock).
+  - TLS is disabled. We will enable it later in this tutorial
+
+These changes do not affect Vault's functionality and they won't get in the way of your learning.
+
+So for now, just run Vault with the provided configuration file, using this command:
+
+```bash
+vault server --config ./vault-config.hcl
+```
+
+# 
