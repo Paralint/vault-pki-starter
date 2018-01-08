@@ -2,7 +2,7 @@
 A small project to get you started running your own PKI with Vault (on Consul storage backend). This guide will setup Vault with a Consul storage backend by following these steps:
 
    1. [Install the binaries](#installing-the-binaries)
-   1. [Start Consul (the storage back-end)](#start-consul-the-storage-backend)
+   1. [Start Consul (the storage back-end)](#start-consul-the-storage-back-end)
    1. [Start Vault](#start-vault)
    1. [Initialize Vault](#initialize-vault)
 
