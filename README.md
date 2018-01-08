@@ -43,7 +43,7 @@ These commands will download and install Vault to your account.
 ```bash
 #Download the latest binary
 curl -kO https://releases.hashicorp.com/vault/0.9.1/vault_0.9.1_linux_amd64.zip
-#Unzip the binary in the path
+#Unzip the binary anywhere
 unzip vault_0.9.1_linux_amd64.zip 
 #Make an alias to Vault (to simulate it beign in your path)
 alias vault=$PWD/vault
