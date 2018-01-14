@@ -135,5 +135,124 @@ So for now, just run Vault with the provided configuration file, using this comm
 vault server --config ./vault-config.hcl
 ```
 
-# Initialize Vault 
+# Initialize Vault
+Everything Vault persists to disk is encrypted. There is no hardcoded key in Vault, you must generate one at instllation time. There is a single key shared by all members of a cluster. 
 
+To increase security, Vault's master is never saved to disk, not even in encrypted form. When the master key is created, it is split in a number of key shards. To unseal Vault, a certain number of these shards must be provided so Vault can reconstruct the master key in memory. The number of key required to unseal Vault is called the 'quorum'.
+
+By default, the master key is split in 5 shards, and 3 must be presented to unseal Vault. We will make it 2 out of 7 for demonstration purpose.
+
+To initialize Vault with a 2 out of 7 quorum, run this command:
+
+```bash
+vault init --key-threshold=2 --key-shares=7 
+```
+
+You will receive the requested number of shards as well as an initial, all powerful root token:
+
+```
+Unseal Key 1: buZ8bOMdTzKnjUVJFl/RIC0lkmRboOSxc7XWnk1R7d/m
+Unseal Key 2: l4G0uDHhOZq+2LtPlOP1jV8FfBZW/sHh1Oc7ty1rNZaL
+Unseal Key 3: eFNC9jbuppDmunoGEUQmZ0dRlw6jIHVj5at5kdHO6UyC
+Unseal Key 4: 7tlSeabl82vkNI0Zkv2cAfEIwbjj8bFwokStazoXWF0p
+Unseal Key 5: ie0mnF+QncRnHQUFUBo0vH5B4DcoD+pLO4KCCOHTheU5
+Unseal Key 6: LXrYGBAXpT4+ODLOGWy6ZT20IHT9NDxNpDSqU+WXjLro
+Unseal Key 7: dGu4F10tQBIyMTaMPtcLKqR5z+1m5JInLWBkeal3B9w/
+Initial Root Token: 2672f8c0-2bc4-b745-bb91-40900af9ec7e
+```
+
+You must save this information very carefully, and distribute it amongst 7 different person. There are a number of other options that increase the security of the process, and you should the time to reflect on this to get the rigth balance between security and convience.
+
+But Vault is still not in a state where it can store and retrieve secrets. If you issue any command, you will get this message back :
+
+```
+Error reading secret/test: Error making API request.
+
+URL: GET http://localhost:8200/v1/secret/test
+Code: 503. Errors:
+
+* Vault is sealed
+```
+
+Vault is ready, but just as if it was restarted (after upgrading version or OS restart), it has to be unsealed.
+
+# Unseal vault
+To read its own data, Vault needs the master key. That master is reconstructed at runtime from a number of key shards, only 2 in our example.
+
+To unseal Vault, issue this command:
+
+```
+vault unseal
+```
+
+When prompted, enter any of the shards generated when Vault was initialized. Any shard in any order will do. After entering one, Vault will display this message :
+
+```
+Key (will be hidden):
+Sealed: true
+Key Shares: 7
+Key Threshold: 2
+Unseal Progress: 1
+Unseal Nonce: 4fcc8e83-6050-aeef-d2ff-0ac710d4d5cd
+```
+
+Keep entering shards (one more in our example) until you get the `Status: unsealed` message:
+
+```
+Key (will be hidden):
+Sealed: false
+Key Shares: 7
+Key Threshold: 2
+Unseal Progress: 0
+Unseal Nonce
+```
+
+# Configuring Vault
+## Gain root privileges (in Vault, not Linux)
+To authenticate to Vault, you need a token. In a fully configured production environment, this token will be given after you authenticate to an external source, like an LDAP server or GitHub. But at this point, the only token there is is the root token provided when Vault was initialized. 
+
+To use the root token, just set the `VAULT_TOKEN` environment variable:
+
+### Use the root token on Linux
+```bash
+#DO NOT USE THIS VALUE, use the root token you got back from vault init
+export VAULT_TOKEN=2672f8c0-2bc4-b745-bb91-40900af9ec7e
+```
+
+### Use the root token on Windows
+```bash
+REM : DO NOT USE THIS VALUE, use the root token you got back from vault init
+set VAULT_TOKEN=2672f8c0-2bc4-b745-bb91-40900af9ec7e
+```
+
+You should now be able to write to Vault:
+
+```bash
+vault write secret/test hello=world
+```
+
+## Mount a username/password backend
+There are multiple authentication backends. To reduce dependencies for this sample, let's use Vault own username-password storage
+
+```
+vault auth-enable userpass
+```
+
+```
+vault write sys/policy/manage-cuisine-policy - << EOF 
+path "secret/cuisine/*" {
+  capabilities = [
+	"create", 
+        "read", 
+        "update", 
+        "delete", 
+        "list"
+   ]
+}
+EOF
+```
+
+vault mount userpass
+vault write auth/userpass/users/mitchellh \
+    password=foo \
+    policies=admins
