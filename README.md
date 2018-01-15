@@ -196,7 +196,7 @@ Unseal Progress: 1
 Unseal Nonce: 4fcc8e83-6050-aeef-d2ff-0ac710d4d5cd
 ```
 
-Keep entering shards (one more in our example) until you get the `Status: unsealed` message:
+Keep entering shards (one more in our example) until you get the `Sealed: false` message:
 
 ```
 Key (will be hidden):
@@ -238,21 +238,39 @@ There are multiple authentication backends. To reduce dependencies for this samp
 vault auth-enable userpass
 ```
 
+With that backend mounted, lets write some users to it:
+
 ```
-vault write sys/policy/manage-cuisine-policy - << EOF 
+vault write auth/userpass/users/chef password=secret123 policies=manage-cuisine
+vault write auth/userpass/users/cook password=secret123 policies=manage-cuisine
+vault write auth/userpass/users/plunge password=secret123 
+```
+
+We haven't defined what the policy is, but it does not matter. The policy will be assigned to the user, but it won't give the user any rights. You can use that mechanism to map some external policy system to Vault policy. But we want to create two policies:
+
+| Policy name | Policy rights |
+|-------------|---------------|
+| manage-cuisine | Full read and write access to cuisine secrets, but not to Vault itself|
+| work-cuisine | Read access to cuisine secrets only |
+
+```
+vault policy-write manage-cuisine @manage-cuisine-policy.hcl
+vault policy-write manage-cuisine @work-cuisine-policy.hcl
+```
+
+On Linux, I like to use the "herefile" syntax to specify a policy. I will continue to use a platform independant way of working in this tutorial, but here is how you do it:
+
+```
+vault policy-write manage-cuisine - << EOF
 path "secret/cuisine/*" {
   capabilities = [
-	"create", 
-        "read", 
-        "update", 
-        "delete", 
+        "create",
+        "read",
+        "update",
+        "delete",
         "list"
    ]
 }
 EOF
 ```
 
-vault mount userpass
-vault write auth/userpass/users/mitchellh \
-    password=foo \
-    policies=admins
