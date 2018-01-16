@@ -77,7 +77,6 @@ The chef's job is done, let's log him out:
 vault token-revoke --self
 ```
 
-
 ## Read a secret
 Let's login with as a cook and read the secret of French cuisine:
 
@@ -85,5 +84,4 @@ Let's login with as a cook and read the secret of French cuisine:
 vault auth --method=userpass username=cook
 vault read secret/cuisine/french
 ```
-
 
