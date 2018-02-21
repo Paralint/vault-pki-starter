@@ -1,9 +1,9 @@
 # Cuisine secrets
 ## Mount a username/password backend
-There are multiple authentication backends. To reduce dependencies for this sample, lets use Vault own username-password storage
+There are multiple authentication backends. To reduce dependencies for this sample, let's use Vault own username-password storage
 
 ```
-vault auth-enable userpass
+vault auth enable userpass
 ```
 
 With that backend mounted, lets write some users to it:
@@ -20,7 +20,7 @@ Authentication with a user is pretty much the same thing regardless of authentic
 ```bash
 #Make sure you don't have another token set (like the root token), because it will take precedence.
 unset VAULT_TOKEN
-vault auth --method=userpass username=chef
+vault login --method=userpass username=chef
 ```
 
 # Define Policies
@@ -32,14 +32,14 @@ We haven't defined what the policy is, but it does not matter. The policy will b
 | work-cuisine | Read access to cuisine secrets only |
 
 ```
-vault policy-write manage-cuisine @manage-cuisine-policy.hcl
-vault policy-write work-cuisine @work-cuisine-policy.hcl
+vault policy write manage-cuisine @manage-cuisine-policy.hcl
+vault policy write work-cuisine @work-cuisine-policy.hcl
 ```
 
 On Linux, I like to use the "herefile" syntax to specify a policy. I will continue to use a platform independant way of working in this tutorial, but here is how you do it:
 
 ```
-vault policy-write manage-cuisine - << EOF
+vault policy write manage-cuisine - << EOF
 path "secret/cuisine/*" {
   capabilities = [
         "create",
@@ -58,7 +58,7 @@ Ok, we are ready to write our first secrets! We went to all this trouble, so let
 ```bash
 #Make sure you don't have another token set (like the root token), because it will take precedence.
 unset VAULT_TOKEN
-vault auth --method=userpass username=chef
+vault login --method=userpass username=chef
 ```
 
 ## Write a secret
@@ -74,14 +74,14 @@ vault write secret/cuisine/french @french.json
 The chef's job is done, let's log him out:
 
 ```
-vault token-revoke --self
+vault token revoke --self
 ```
 
 ## Read a secret
 Let's login with as a cook and read the secret of French cuisine:
 
 ```
-vault auth --method=userpass username=cook
+vault login --method=userpass username=cook
 vault read secret/cuisine/french
 ```
 

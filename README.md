@@ -29,6 +29,10 @@ If you must use Windows, here are the steps to follow
       doskey vault=if $1. equ . ^(%CD%\vault.exe^) else ^(%CD%\vault.exe $*^)
       popd
       ```
+ 4. We will be using HTTP for now, because we don't have a certificate yet. Until we do, set this environment variable:
+      ```
+      SET VAULT_ADDR=http://localhost:8200
+      ```
 
 ### Vault Linux download and installation (if you have root privileges)
 These commands will download, install and give enhanced security permissions to Vault.
@@ -145,7 +149,7 @@ By default, the master key is split in 5 shards, and 3 must be presented to unse
 To initialize Vault with a 2 out of 7 quorum, run this command:
 
 ```bash
-vault init --key-threshold=2 --key-shares=7 
+vault operator init --key-threshold=2 --key-shares=7 
 ```
 
 You will receive the requested number of shards as well as an initial, all powerful root token:
@@ -182,7 +186,7 @@ To read its own data, Vault needs the master key. That master is reconstructed a
 To unseal Vault, issue this command:
 
 ```
-vault unseal
+vault operator unseal
 ```
 
 When prompted, enter any of the shards generated when Vault was initialized. Any shard in any order will do. After entering one, Vault will display this message :
@@ -215,13 +219,13 @@ To use the root token, just set the `VAULT_TOKEN` environment variable:
 
 ### Use the root token on Linux
 ```bash
-#DO NOT USE THIS VALUE, use the root token you got back from vault init
+#DO NOT USE THIS VALUE, use the root token you got back from vault operator init
 export VAULT_TOKEN=2672f8c0-2bc4-b745-bb91-40900af9ec7e
 ```
 
 ### Use the root token on Windows
 ```bash
-REM : DO NOT USE THIS VALUE, use the root token you got back from vault init
+REM : DO NOT USE THIS VALUE, use the root token you got back from vault operator init
 set VAULT_TOKEN=2672f8c0-2bc4-b745-bb91-40900af9ec7e
 ```
 
@@ -239,7 +243,7 @@ I suggest you continue playing around with the concepts of policies, authenticat
 There are multiple authentication backends. To reduce dependencies for this sample, let's use Vault own username-password storage
 
 ```
-vault auth-enable userpass
+vault auth enable userpass
 ```
 
 With that backend mounted, lets write some users to it:
@@ -256,7 +260,7 @@ Authentication with a user is pretty much the same thing regardless of authentic
 ```bash
 #Make sure you don't have another token set (like the root token), because it will take precedence.
 unset VAULT_TOKEN
-vault auth --method=userpass username=chef
+vault login --method=userpass username=chef
 ```
 
 # Define Policies
@@ -268,14 +272,14 @@ We haven't defined what the policy is, but it does not matter. The policy will b
 | work-cuisine | Read access to cuisine secrets only |
 
 ```
-vault policy-write manage-cuisine @manage-cuisine-policy.hcl
-vault policy-write work-cuisine @work-cuisine-policy.hcl
+vault policy write manage-cuisine @manage-cuisine-policy.hcl
+vault policy write work-cuisine @work-cuisine-policy.hcl
 ```
 
 On Linux, I like to use the "herefile" syntax to specify a policy. I will continue to use a platform independant way of working in this tutorial, but here is how you do it:
 
 ```
-vault policy-write manage-cuisine - << EOF
+vault policy write manage-cuisine - << EOF
 path "secret/cuisine/*" {
   capabilities = [
         "create",
@@ -294,7 +298,7 @@ Ok, we are ready to write our first secrets! We went to all this trouble, so let
 ```bash
 #Make sure you don't have another token set (like the root token), because it will take precedence.
 unset VAULT_TOKEN
-vault auth --method=userpass username=chef
+vault login --method=userpass username=chef
 ```
 
 ## Write a secret
@@ -310,7 +314,7 @@ vault write secret/cuisine/french @french.json
 The chef's job is done, let's log him out:
 
 ```
-vault token-revoke --self
+vault token revoke --self
 ```
 
 
@@ -318,7 +322,7 @@ vault token-revoke --self
 Let's login with as a cook and read the secret of French cuisine:
 
 ```
-vault auth --method=userpass username=cook
+vault login --method=userpass username=cook
 vault read secret/cuisine/french
 ```
 
