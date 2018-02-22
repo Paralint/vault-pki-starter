@@ -39,9 +39,11 @@ These commands will download, install and give enhanced security permissions to 
 
 ```bash
 #Download the latest binary
-curl -kO https://releases.hashicorp.com/vault/0.9.1/vault_0.9.1_linux_amd64.zip
+curl -kO https://releases.hashicorp.com/vault/0.9.3/vault_0.9.3_linux_amd64.zip
 #Copy the binary in the path
-sudo unzip vault_0.9.1_linux_amd64.zip -d /usr/local/bin
+sudo unzip -ou $PWD/vault_0.9.3_linux_amd64.zip -d /usr/local/bin
+#We will be using HTTP for now, because we don't have a certificate yet
+export VAULT_ADDR=http://localhost:8200
 #(Optional) Allow Vault to lock memory and prevent paging of sensitive key material
 sudo setcap cap_ipc_lock=+ep /usr/local/bin/vault
 ```
@@ -51,9 +53,11 @@ These commands will download and install Vault to your account.
 
 ```bash
 #Download the latest binary
-curl -kO https://releases.hashicorp.com/vault/0.9.1/vault_0.9.1_linux_amd64.zip
+curl -kO https://releases.hashicorp.com/vault/0.9.3/vault_0.9.3_linux_amd64.zip
 #Unzip the binary anywhere
-unzip vault_0.9.1_linux_amd64.zip 
+unzip -ou vault_0.9.3_linux_amd64.zip 
+#We will be using HTTP for now, because we don't have a certificate yet
+export VAULT_ADDR=http://localhost:8200
 #Make an alias to Vault (to simulate it beign in your path)
 alias vault=$PWD/vault
 ```
@@ -91,9 +95,9 @@ These commands will download and install Consul and make it available to everyon
 
 ```bash
 #Download the latest binary
-curl -kO https://releases.hashicorp.com/consul/1.0.2/consul_1.0.2_linux_amd64.zip
+curl -kO https://releases.hashicorp.com/consul/1.0.6/consul_1.0.6_linux_amd64.zip
 #Copy the binary in the path
-sudo unzip consul_1.0.2_linux_amd64.zip -d /usr/local/bin
+sudo unzip -ou consul_1.0.6_linux_amd64.zip -d /usr/local/bin
 ```
 
 ### Consul Linux download and installation (without root privileges)
@@ -101,9 +105,9 @@ These commands will download and install Consul to your account.
 
 ```bash
 #Download the latest binary
-curl -kO https://releases.hashicorp.com/consul/1.0.2/consul_1.0.2_linux_amd64.zip
+curl -kO https://releases.hashicorp.com/consul/1.0.6/consul_1.0.6_linux_amd64.zip
 #Unzip the binary anywhere
-unzip consul_1.0.2_linux_amd64.zip
+unzip -ou consul_1.0.6_linux_amd64.zip
 #Make an alias to Vault (to simulate it beign in your path)
 alias consul=$PWD/consul
 ```
@@ -192,60 +196,77 @@ vault operator unseal
 When prompted, enter any of the shards generated when Vault was initialized. Any shard in any order will do. After entering one, Vault will display this message :
 
 ```
-Key (will be hidden):
-Sealed: true
-Key Shares: 7
-Key Threshold: 2
-Unseal Progress: 1
-Unseal Nonce: 4fcc8e83-6050-aeef-d2ff-0ac710d4d5cd
+Unseal Key (will be hidden):
+Key                Value
+---                -----
+Seal Type          shamir
+Sealed             true
+Total Shares       7
+Threshold          2
+Unseal Progress    1/2
+Unseal Nonce       d7d74781-c749-b11a-7212-6fffb0d64b62
+Version            0.9.3
+HA Enabled         true
+HA Mode            sealed
 ```
 
-Keep entering shards (one more in our example) until you get the `Sealed: false` message:
+Keep entering shards (one more in our example) until you get the `Sealed false` message:
 
 ```
 Key (will be hidden):
-Sealed: false
-Key Shares: 7
-Key Threshold: 2
-Unseal Progress: 0
-Unseal Nonce
+Key             Value
+---             -----
+Seal Type       shamir
+Sealed          false
+Total Shares    7
+Threshold       2
+Version         0.9.3
+Cluster Name    vault-cluster-e4f97e7d
+Cluster ID      45204ef9-e624-619b-7d13-f875e56b78ef
+HA Enabled      true
+HA Mode         standby
+HA Cluster      n/a
 ```
 
 # Configuring Vault
 ## Gain root privileges (in Vault, not Linux)
 To authenticate to Vault, you need a token. In a fully configured production environment, this token will be given after you authenticate to an external source, like an LDAP server or GitHub. But at this point, the only token there is is the root token provided when Vault was initialized. 
 
-To use the root token, just set the `VAULT_TOKEN` environment variable:
+To use the root token, use vault login command (new in version 0.9.3). Use the token you got back when you ran the command `vault operator init`.
 
-### Use the root token on Linux
-```bash
-#DO NOT USE THIS VALUE, use the root token you got back from vault operator init
-export VAULT_TOKEN=2672f8c0-2bc4-b745-bb91-40900af9ec7e
+```
+vault login 2672f8c0-2bc4-b745-bb91-40900af9ec7e
 ```
 
-### Use the root token on Windows
+You should now be able to write your first secret to Vault:
+
 ```bash
-REM : DO NOT USE THIS VALUE, use the root token you got back from vault operator init
-set VAULT_TOKEN=2672f8c0-2bc4-b745-bb91-40900af9ec7e
+vault write secret/test "hello=world"
 ```
 
-You should now be able to write to Vault:
+## Mount a username/password backend
+There are multiple authentication backends. To reduce dependencies needed for this sample to work, let's use Vault own username-password storage. Typically, you would pick an authentication backend that you currently use, like an ldap server.
 
-```bash
-vault write secret/test hello=world
+```
+vault auth enable userpass
+```
+
+Create a user in it
+
+```
+vault write auth/userpass/users/user1 password=secret123 
+```
+
+Authenticate with that user and password:
+
+```
+vault login --method=userpass "username=user1"
 ```
 
 ## Next steps
 I suggest you continue playing around with the concepts of policies, authentication back end and roles by continuing to the [cuisine tutorial](cuisine.md), where we store the secret ingredients of some of my favorite cuisine.
 
 # Cuisine secrets
-## Mount a username/password backend
-There are multiple authentication backends. To reduce dependencies for this sample, let's use Vault own username-password storage
-
-```
-vault auth enable userpass
-```
-
 With that backend mounted, lets write some users to it:
 
 ```
