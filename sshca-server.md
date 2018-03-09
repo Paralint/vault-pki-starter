@@ -39,7 +39,7 @@ EOF
 
 ## Create a role that allows a Linux admin to sign host keys
 
-Signing a certificate is seen as an update operation in Vault. We give that right on the path where we will send our public key for signature soon.
+Signing a server key is seen as an update operation in Vault. We give that right on the path where we will send our public key for signature soon.
 
 ```bash
 #Vault policy allowing to sign host's SSH key
@@ -64,16 +64,18 @@ The following command will create:
 vault write auth/userpass/users/admin1 password=admin policies=ssh-host-configuration
 ```
 
-Authenticate with that user: 
+
+Vault is all set now. Let's configure a server.
+
+## Sign the host SSH key
+
+Authenticate with a user that can sign a host key. The root token can do that, 
+but you must not run with the root token unless you are configuring Vault itself. 
 
 ```bash
 #Command to get a token from Vault, enter the password when prompted
 vault login --method=userpass username=admin1
 ```
-
-Vault is all set now. Let's configure a server.
-
-## Sign the host SSH key
 
 Sign the host key with this command, and save the resulting certificate in a file. If you use the default paths, this command should work on every server.
 
