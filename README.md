@@ -39,9 +39,9 @@ These commands will download, install and give enhanced security permissions to 
 
 ```bash
 #Download the latest binary
-curl -kO https://releases.hashicorp.com/vault/0.9.5/vault_0.9.5_linux_amd64.zip
+curl -kO https://releases.hashicorp.com/vault/0.10.0/vault_0.10.0_linux_amd64.zip
 #Copy the binary in the path
-sudo unzip -ou $PWD/vault_0.9.5_linux_amd64.zip -d /usr/local/bin
+sudo unzip -ou $PWD/vault_0.10.0_linux_amd64.zip -d /usr/local/bin
 #We will be using HTTP for now, because we don't have a certificate yet
 export VAULT_ADDR=http://localhost:8200
 #(Optional) Allow Vault to lock memory and prevent paging of sensitive key material
@@ -53,9 +53,9 @@ These commands will download and install Vault to your account.
 
 ```bash
 #Download the latest binary
-curl -kO https://releases.hashicorp.com/vault/0.9.5/vault_0.9.5_linux_amd64.zip
+curl -kO https://releases.hashicorp.com/vault/0.10.0/vault_0.10.0_linux_amd64.zip
 #Unzip the binary anywhere
-unzip -ou vault_0.9.5_linux_amd64.zip 
+unzip -ou vault_0.10.0_linux_amd64.zip 
 #We will be using HTTP for now, because we don't have a certificate yet
 export VAULT_ADDR=http://localhost:8200
 #Make an alias to Vault (to simulate it beign in your path)
@@ -205,7 +205,7 @@ Total Shares       7
 Threshold          2
 Unseal Progress    1/2
 Unseal Nonce       d7d74781-c749-b11a-7212-6fffb0d64b62
-Version            0.9.5
+Version            0.10.0
 HA Enabled         true
 HA Mode            sealed
 ```
@@ -220,7 +220,7 @@ Seal Type       shamir
 Sealed          false
 Total Shares    7
 Threshold       2
-Version         0.9.5
+Version         0.10.0
 Cluster Name    vault-cluster-e4f97e7d
 Cluster ID      45204ef9-e624-619b-7d13-f875e56b78ef
 HA Enabled      true
