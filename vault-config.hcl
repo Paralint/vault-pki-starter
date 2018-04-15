@@ -1,9 +1,10 @@
 disable_mlock=true
 
 storage "consul" {
-  path = "127.0.0.1:8300/"
+  address = "127.0.0.1:8500/"
 }
 
+ui = true
 
 listener "tcp" {
   address = "127.0.0.1:8200"
