@@ -1,10 +1,11 @@
 # vault-pki-starter
-A small project to get you started running your own PKI with Vault (on Consul storage backend). This guide will setup Vault with a Consul storage backend by following these steps:
+A small project to get you started running your own PKI with Vault (on Raft storage backend). This guide is meant for folks who are stuck with a crappy corporate desktop and can't drink the fancy Kubernetes juice. Following this guide will setup Vault following these steps:
 
    1. [Install the binaries](#installing-the-binaries)
-   1. [Start Consul (the storage back-end)](#start-consul-the-storage-back-end)
    1. [Start Vault](#start-vault)
    1. [Initialize Vault](#initialize-vault)
+
+After that, or if you already have Vault installed some other way, you can move on to mouting your PKI.
 
 # Installing the binaries
 
@@ -15,14 +16,14 @@ This starter project was written and tested in Windows, running the Linux versio
 ## Download and install Vault
 
 ### Windows installation 
-Although [I have my share of Windows scripting](https://stackoverflow.com/search?q=user%3A591064+%5Bbatch-file%5D), I feel there are too numerous options and too few tools to provide a copy-paste procedure like in Linux. If you are on Windows 10 and have [Windows Subsystem for Linux installed](https://docs.microsoft.com/en-us/windows/wsl/install-win10), then you should start bash on Windows and run one of the Linux guides below. I would not run that configuration in production though.
+Although [I have done my share of Windows scripting](https://stackoverflow.com/search?q=user%3A591064+%5Bbatch-file%5D), I feel there are too numerous options and too few tools to provide a copy-paste procedure like in Linux. If you are on Windows 10 and have [Windows Subsystem for Linux installed](https://docs.microsoft.com/en-us/windows/wsl/install-win10), then you should start bash on Windows and run one of the Linux guides below. I would not run that configuration in production though.
 
-If you must use Windows, here are the steps to follow
+If you must use plain old CMD prompt on Windows, here are the steps to follow
 
- 1. Download the [latest Windows binaries for Vault from the download page](https://www.vaultproject.io/downloads.html). 
+ 1. Download the [latest Windows binaries for Vault from the download page](https://www.vaultproject.io/downloads.html). This guide assumes you are on **1.3** or later.
  2. Unzip the file `vault.exe` it contains to a directory 
  3. Make vault.exe runnable from anywhere on the command line, using one of these methods
-     * Add the folder you copied vault.exe to your path or
+     * (prefered) Add the folder you copied vault.exe to your path or
      * Create an alias to Vault 
       ```
       pushd <path where Vault is installed>
@@ -39,9 +40,9 @@ These commands will download, install and give enhanced security permissions to 
 
 ```bash
 #Download the latest binary
-curl -kO https://releases.hashicorp.com/vault/0.10.0/vault_0.10.0_linux_amd64.zip
+curl -kOL https://releases.hashicorp.com/vault/1.3.1/vault_1.3.1_linux_amd64.zip
 #Copy the binary in the path
-sudo unzip -ou $PWD/vault_0.10.0_linux_amd64.zip -d /usr/local/bin
+sudo unzip -ou $PWD/vault_1.3.1_linux_amd64.zip -d /usr/local/bin
 #We will be using HTTP for now, because we don't have a certificate yet
 export VAULT_ADDR=http://localhost:8200
 #(Optional) Allow Vault to lock memory and prevent paging of sensitive key material
@@ -53,7 +54,7 @@ These commands will download and install Vault to your account.
 
 ```bash
 #Download the latest binary
-curl -kO https://releases.hashicorp.com/vault/0.10.0/vault_0.10.0_linux_amd64.zip
+curl -kO https://releases.hashicorp.com/vault/1.3.1/vault_1.3.1_linux_amd64.zip
 #Unzip the binary anywhere
 unzip -ou vault_0.10.0_linux_amd64.zip 
 #We will be using HTTP for now, because we don't have a certificate yet
@@ -69,64 +70,6 @@ Vault should be ready to run. Try this commmand (same command on all OS):
 vault version
 ```
 
-# Running Vault on a Consul storage backend
-
-## Running Consul, the storage backend
-Vault has a pluggable storage engine. Storing to a file is fine, but will not provide you HA capabilites. Considering that you cannot change storage backends and that running Consul is very straighforward, let's bite the bullet and use that from the start.
-
-### Windows installation 
-Just like Vault, Consul on Windows is easy but Windows lacks basic scripting tools. If you are on Windows 10 and have [Windows Subsystem for Linux installed](https://docs.microsoft.com/en-us/windows/wsl/install-win10), then you should start bash on Windows and run one of the Linux guides below.
-
-If you must use Windows, here are the steps to follow
-
- 1. Download the [latest Windows binaries for Consul from the download page](https://www.consul.io/downloads.html). 
- 2. Unzip the file `consul.exe` the zip file contains to any directory you have write access to
- 3. Make consul.exe runnable from anywhere on the command line, using one of these methods
-     * Add the folder you copied consul.exe to your path or
-     * Create an alias to Consul
-      ```
-      pushd <path where Consul is installed>
-      doskey consul=if $1. equ . ^(%CD%\consul.exe^) else ^(%CD%\consul.exe $*^)
-      popd
-      ```
-
-### Consul Linux download and installation (if you have root privileges)
-These commands will download and install Consul and make it available to everyone.
-
-```bash
-#Download the latest binary
-curl -kO https://releases.hashicorp.com/consul/1.0.6/consul_1.0.6_linux_amd64.zip
-#Copy the binary in the path
-sudo unzip -ou consul_1.0.6_linux_amd64.zip -d /usr/local/bin
-```
-
-### Consul Linux download and installation (without root privileges)
-These commands will download and install Consul to your account.
-
-```bash
-#Download the latest binary
-curl -kO https://releases.hashicorp.com/consul/1.0.6/consul_1.0.6_linux_amd64.zip
-#Unzip the binary anywhere
-unzip -ou consul_1.0.6_linux_amd64.zip
-#Make an alias to Vault (to simulate it beign in your path)
-alias consul=$PWD/consul
-```
-
-## Testing your installation
-Consul should be ready to run. Try this commmand (same command on all OS):
-
-```bash
-consul version
-```
-
-# Start Consul (the storage back-end)
-A Consul configuration file was created in this repository. It disables update checks and sets a cluster of 1. On a production system, Consul (or whatever storage backend you choose) plays an important part in your high-availability configuration. 
-
-To run `consul` with that configuration file, issue this command:
-
-```bash
-consul agent --server --data-dir ./data --config-file ./consul-config.json --ui --bind 127.0.0.1 
-```
 
 # Start Vault
 It is easy to run vault in development mode, but changes are not persisted to disk. This configuration is somewhat scaled down, but still quite close to a real production deployment. Just so you know, this configuration
@@ -143,6 +86,9 @@ So for now, just run Vault with the provided configuration file, using this comm
 vault server --config ./vault-config.hcl
 ```
 
+You will likely open a new window to work from that point on... To avoid the error `server gave HTTP response to HTTPS client`, set the environment variable again `VAULT_ADDR=http://localhost:8200`.
+
+
 # Initialize Vault
 Everything Vault persists to disk is encrypted. There is no hardcoded key in Vault, you must generate one at instllation time. There is a single key shared by all members of a cluster. 
 
@@ -155,6 +101,7 @@ To initialize Vault with a 2 out of 7 quorum, run this command:
 ```bash
 vault operator init --key-threshold=2 --key-shares=7 
 ```
+
 
 You will receive the requested number of shards as well as an initial, all powerful root token:
 
@@ -182,7 +129,8 @@ Code: 503. Errors:
 * Vault is sealed
 ```
 
-Vault is ready, but just as if it was restarted (after upgrading version or OS restart), it has to be unsealed.
+Vault is running and ready, but in a state just as if it was restarted (after upgrading version or OS restart). It does not know its master key, it has to be unsealed. There are options for auto-unseal, but they are beyond the scope of this guide. Most of them require a KMS or HSM.
+
 
 # Unseal vault
 To read its own data, Vault needs the master key. That master is reconstructed at runtime from a number of key shards, only 2 in our example.
@@ -232,10 +180,16 @@ HA Cluster      n/a
 ## Gain root privileges (in Vault, not Linux)
 To authenticate to Vault, you need a token. In a fully configured production environment, this token will be given after you authenticate to an external source, like an LDAP server or GitHub. But at this point, the only token there is is the root token provided when Vault was initialized. 
 
-To use the root token, use vault login command (appeared in version 0.9.3). Use the token you got back when you ran the command `vault operator init`.
+To use the root token, use `vault login` command. Use the root token you got back when you ran the command `vault operator init`.
 
 ```
-vault login 2672f8c0-2bc4-b745-bb91-40900af9ec7e
+vault login s.WamtK2YBw031YlT3o1gdDRdx
+```
+
+By default, Vault does not load anything it does not need. That means it does not load ... anything! Let's get started with the plain old (but super useful) K/V backend:
+
+```
+vault secrets enable --path=secrets kv
 ```
 
 You should now be able to write your first secret to Vault:
