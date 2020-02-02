@@ -1,7 +1,7 @@
 disable_mlock=true
 
-storage "raft" {
-  path = "."
+storage "file" {
+  path = "data"
 }
 
 cluster_addr = "http://127.0.0.1:8210"
