@@ -21,37 +21,35 @@ Unlike a password, that private key is known only by the owner and never shared.
 
 
 ---
-class: middle, center
 # What are certificate used for?
 
 Certificates prove your identity to a third party that shares a common trustee with you.
 
-You don't need prior arrangement. 
+You don't need prior arrangement, but you must 
+ - Trust the authority that issued the certificate
+ - Be able to confirme the certificate is authentic
 
-Futur entities will be able to identify you if they decide to use the same trustee
+Futur entities will be able to authenticate you if they decide to use the same trustee
 
 
 ---
-class: center
 # Examples of certificates
 
 ## High trust
 
-![Quebec driver's license](permis-de-conduire.png "Quebec driver's license")
+.center[![Quebec driver's license](permis-de-conduire.png "Quebec driver's license")]
 
 
 ---
-class: center
 # Examples of certificates
 
 ## Low trust
 
-![Movie points card](carte-scene.png "Movie points card")
+.center[![Movie points card](carte-scene.png "Movie points card")]
 
 
 ---
 class: middle, center
-
 # Issuing certificates
 
 ---
@@ -161,6 +159,9 @@ The certificate signing request is saved in the file `devops-request.csr`
 ---
 # Give Vault its certificate
 Have the certificate request signed by your certificate authority
+ - Remember, root CA are offline most of the time
+
+--
 
 Add the certificate to Vault
 
@@ -169,7 +170,6 @@ Add the certificate to Vault
 
 vault write issuer/intermediate/set-signed certificate=@devops-cert.pem
 ```
-
 
 ---
 # Define your certificate template (aka Role)
@@ -237,7 +237,8 @@ You must be authenticated
 Post a JSON request to Vault and the get the goods right back
 
 ```
-vault write --format yaml issuer/issue/devops @- << EOF
+#This translate to a POST request to Vault
+vault write issuer/issue/devops @- << EOF
 {
    "ttl" : "48h",
    "common_name": "apptastic.cloud.paralint.lab",
