@@ -63,6 +63,8 @@ class: middle, center
 1. Generate a certificate signing request (CSR)
  - Prove that you own the private key, without sending it
 
+1. Send the CSR to the certificate authority
+
 1. Wait for the Certificate Authority to issue a certificate
  - The CA will sign your public key 
 
