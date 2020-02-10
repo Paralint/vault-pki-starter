@@ -216,7 +216,7 @@ This would be the content of `devops-role.json` managed "as-code"
   "postal_code": [ "H3B 2E3" ],
   "province": [ "Quebec" ],
   "server_flag": true,
-  "ttl": "24h",
+  "ttl": "24h"
 }
 ```
 
