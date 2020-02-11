@@ -1,3 +1,11 @@
+layout: true
+<div class="my-footer"><span>Guillaume Seguin, guillaume@paralint.com</span></div>
+
+
+
+
+
+---
 class: middle, center
 # Automated Certificate Issuance with Hashicorp Vault
 
@@ -90,6 +98,11 @@ Vault can do both, and you can mix them at will
 
 Pick the one that works best for every circomstance
 
+
+
+---
+class: middle, center
+# Issue certificates with Vault
 
 ---
 # Prepare the PKI backend
