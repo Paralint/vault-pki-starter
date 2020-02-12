@@ -1,10 +1,6 @@
 layout: true
 <div class="my-footer"><span>Guillaume Seguin, guillaume@paralint.com</span></div>
 
-
-
-
-
 ---
 class: middle, center
 # Automated Certificate Issuance with Hashicorp Vault
@@ -114,14 +110,8 @@ Mount the backend
 vault secrets enable --path=issuer pki
 ```
 --
-Set the URL that will be put in the issued certificates 
-```
-#Enable the PKI engine on path `issuer`
-
-vault secrets enable --path=issuer pki
-```
---
-Vault doesn't know how it can be reached on the network, tell it
+Vault doesn't know how it can be reached on the network, but it needs that information to 
+put in the certificates. We need to tell it.
 
 ```
 #Set the OCSP and CRL protocol URL
